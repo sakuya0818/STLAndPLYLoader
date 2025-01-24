@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/Models"/>
+    <qresource prefix="/">
+        <file>Res/Shader/fragment_object.frag</file>
+        <file>Res/Shader/vertex_object.vert</file>
+        <file>Res/Shader/vertex.vert</file>
+        <file>Res/Shader/fragment.frag</file>
+        <file>heart.ico</file>
+    </qresource>
+</RCC>
