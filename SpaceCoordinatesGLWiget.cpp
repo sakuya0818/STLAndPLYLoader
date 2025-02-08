@@ -15,22 +15,18 @@ void SpaceCoordinatesGLWiget::drawGrid()
     makeCurrent();
 
     QVector<GLfloat> vertices;
-    float step = 0.1;
+    float step = 0.1f;
     int num = 10;
-    for (int i = -num; i < num + 1; i++)
-    {
-        vertices.push_back(i * step);
-        vertices.push_back(-0.5);
-        vertices.push_back(-num * step);
-        vertices.push_back(i * step);
-        vertices.push_back(-0.5);
-        vertices.push_back(num * step);
-        vertices.push_back(-num * step);
-        vertices.push_back(-0.5);
-        vertices.push_back(i * step);
-        vertices.push_back(num * step);
-        vertices.push_back(-0.5);
-        vertices.push_back(i * step);
+
+    auto addLine = [&](float x1, float y1, float z1, float x2, float y2, float z2) {
+            vertices << x1 << y1 << z1 << 0.2f << 0.8f << 0.8f
+                     << x2 << y2 << z2 << 0.2f << 0.8f << 0.8f;
+        };
+
+    for (int i = -num; i <= num; ++i) {
+        float pos = i * step;
+        addLine(pos, -0.5f, -num * step, pos, -0.5f, num * step);
+        addLine(-num * step, -0.5f, pos, num * step, -0.5f, pos);
     }
 
     m_vaoGrid.bind();
@@ -40,60 +36,109 @@ void SpaceCoordinatesGLWiget::drawGrid()
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
     // 将顶点数据传递给着色器程序
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // 设置颜色属性指针
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     m_vaoGrid.release();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void SpaceCoordinatesGLWiget::drawCoordinates() {
+void SpaceCoordinatesGLWiget::drawCoordinates()
+{
     makeCurrent();
 
-    QVector<GLfloat> vertices;
-    vertices.push_back(-1);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(1);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(1);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(-1);
-    vertices.push_back(0);
-    vertices.push_back(0);
-    vertices.push_back(1);
+    std::vector<GLfloat> vertices;
+
+    // 原坐标轴顶点数据（颜色分别为红、绿、蓝）
+    const GLfloat originalVertices[] = {
+        // X轴（红色）
+        -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+         1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        // Y轴（绿色）
+         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        // Z轴（蓝色）
+         0.0f, 0.0f,-1.0f, 0.0f, 0.0f, 1.0f,
+         0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
+    };
+    vertices.insert(vertices.end(), originalVertices, originalVertices + sizeof(originalVertices)/sizeof(GLfloat));
+
+    // 生成刻度线参数
+    const float mainTickSize = 0.02f; // 主刻度线长度的一半
+    const float subTickSize = 0.01f;  // 次刻度线长度的一半
+    const int numXTicks = 21;         // X轴主刻度数（-1.0到1.0，步长0.1）
+    const int numYTicks = 11;         // Y轴主刻度数（0.0到1.0，步长0.1）
+    const int numZTicks = 21;         // Z轴主刻度数（-1.0到1.0，步长0.1）
+
+    // 生成X轴刻度线（沿Y方向，红色）
+    for (int i = 0; i < numXTicks; ++i) {
+        float x = -1.0f + i * 0.1f;
+        // 主刻度线
+        vertices.insert(vertices.end(), {x, -mainTickSize, 0.0f, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {x,  mainTickSize, 0.0f, 1.0f, 0.0f, 0.0f});
+
+        // 次刻度线（每两个主刻度之间加四个次刻度）
+        if (i < numXTicks - 1) {
+            for (int j = 1; j < 5; ++j) {
+                float subX = x + j * 0.02f; // 次刻度间隔为0.02
+                vertices.insert(vertices.end(), {subX, -subTickSize, 0.0f, 1.0f, 0.0f, 0.0f});
+                vertices.insert(vertices.end(), {subX,  subTickSize, 0.0f, 1.0f, 0.0f, 0.0f});
+            }
+        }
+    }
+
+    // 生成Y轴刻度线（沿X方向，绿色）
+    for (int i = 0; i < numYTicks; ++i) {
+        float y = i * 0.1f;
+        // 主刻度线
+        vertices.insert(vertices.end(), {-mainTickSize, y, 0.0f, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), { mainTickSize, y, 0.0f, 0.0f, 1.0f, 0.0f});
+
+        // 次刻度线（每两个主刻度之间加四个次刻度）
+        if (i < numYTicks - 1) {
+            for (int j = 1; j < 5; ++j) {
+                float subY = y + j * 0.02f; // 次刻度间隔为0.02
+                vertices.insert(vertices.end(), {-subTickSize, subY, 0.0f, 0.0f, 1.0f, 0.0f});
+                vertices.insert(vertices.end(), { subTickSize, subY, 0.0f, 0.0f, 1.0f, 0.0f});
+            }
+        }
+    }
+
+    // 生成Z轴刻度线（沿X方向，蓝色）
+    for (int i = 0; i < numZTicks; ++i) {
+        float z = -1.0f + i * 0.1f;
+        // 主刻度线
+        vertices.insert(vertices.end(), {-mainTickSize, 0.0f, z, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), { mainTickSize, 0.0f, z, 0.0f, 0.0f, 1.0f});
+
+        // 次刻度线（每两个主刻度之间加四个次刻度）
+        if (i < numZTicks - 1) {
+            for (int j = 1; j < 5; ++j) {
+                float subZ = z + j * 0.02f; // 次刻度间隔为0.02
+                vertices.insert(vertices.end(), {-subTickSize, 0.0f, subZ, 0.0f, 0.0f, 1.0f});
+                vertices.insert(vertices.end(), { subTickSize, 0.0f, subZ, 0.0f, 0.0f, 1.0f});
+            }
+        }
+    }
 
     m_vaoCoordinates.bind();
-    // 生成一个缓冲对象名称
+
+    // 创建、绑定并更新VBO数据
     glGenBuffers(1, &m_vbo[1]);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
-    // 将顶点数据传递给着色器程序
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // 设置顶点属性指针
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     m_vaoCoordinates.release();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // 标签
-//    qglColor(QColor::fromRgbF(1, 0, 0));
-//    renderText(-900, 0, 0, "-X", QFont("helvetica", 12, QFont::Bold, true));
-//    renderText(900, 0, 0, "+X", QFont("helvetica", 12, QFont::Bold, true));
-//    qglColor(QColor::fromRgbF(0, 1, 0));
-//    renderText(0, -900, 0, "-Y", QFont("helvetica", 12, QFont::Bold, true));
-//    renderText(0, 900, 0, "+Y", QFont("helvetica", 12, QFont::Bold, true));
-//    qglColor(QColor::fromRgbF(0, 0, 1));
-//    renderText(0, 0, 700, "+Z", QFont("helvetica", 12, QFont::Bold, true));
-//    glLineWidth(1.0f);
-//    glPopMatrix();
 }
 
 void SpaceCoordinatesGLWiget::initializeGL()

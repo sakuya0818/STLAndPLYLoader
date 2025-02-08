@@ -28,9 +28,6 @@ public:
     // 画坐标系
     void drawCoordinates();
 
-    // 创建文本的纹理
-    void createTextTexture(const QString &text, const QVector3D &position, const QVector3D &color);
-
     // 规格化点数据，映射到-1.0 ~ 1.0的范围之内
     void normalizePointData(QVector<QVector3D> data);
 

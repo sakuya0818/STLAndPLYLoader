@@ -21,6 +21,9 @@ public:
 
     void translate_point(QPoint &p_ab);
 
+    // 辅助函数：将3D点投影到屏幕坐标
+    QPointF projectToScreen(const QVector3D &point, const QMatrix4x4 &mvp, const QRect &viewport);
+
 protected:
     void paintGL() override;
     void mouseMoveEvent(QMouseEvent *event) override;

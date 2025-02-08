@@ -160,14 +160,50 @@ void ModelWidget::paintGL()
     if (m_bDrawGrid)
     {
         m_vaoGrid.bind();
-        glDrawArrays(GL_LINES, 0, 240);
+        glDrawArrays(GL_LINES, 0, 84);
         m_vaoGrid.release();
     }
     if (m_bDrawCoordinates)
     {
         m_vaoCoordinates.bind();
-        glDrawArrays(GL_LINES, 0, 18);
+        glDrawArrays(GL_LINES, 0, 512);
         m_vaoCoordinates.release();
+        // 释放ShaderProgram，准备使用QPainter
+        m_shaderProgram.release();
+
+        // 计算坐标轴末端点的屏幕坐标
+        QMatrix4x4 mvp = projection * m_camera->getViewMatrix() * modelMatrix;
+        QRect viewport(0, 0, width(), height());
+
+        // 定义坐标轴末端点（模型空间）
+        QVector3D xStart(-1, 0, 0); // X轴起始端
+        QVector3D xEnd(1, 0, 0); // X轴末端
+        QVector3D yEnd(0, 1, 0); // Y轴末端
+        QVector3D zStart(0, 0, 1); // Z轴起始端
+        QVector3D zEnd(0, 0, -1); // Z轴末端
+
+        // 将3D点投影到屏幕坐标
+        QPointF screenMinusX = projectToScreen(xStart, mvp, viewport);
+        QPointF screenX = projectToScreen(xEnd, mvp, viewport);
+        QPointF screenY = projectToScreen(yEnd, mvp, viewport);
+        QPointF screenMinusZ = projectToScreen(zStart, mvp, viewport);
+        QPointF screenZ = projectToScreen(zEnd, mvp, viewport);
+
+        // 使用QPainter绘制标签
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setFont(QFont("Arial", 16));
+        painter.setPen(Qt::red);
+        // 绘制标签（稍微偏移以避免覆盖坐标轴末端）
+        painter.drawText(screenMinusX + QPointF(-5, 0), "-x");
+        painter.drawText(screenX + QPointF(5, 0), "+x");
+        painter.setPen(Qt::green);
+        painter.drawText(screenY + QPointF(5, 0), "+y");
+        painter.setPen(Qt::blue);
+        painter.drawText(screenMinusZ + QPointF(-5, 0), "-z");
+        painter.drawText(screenZ + QPointF(5, 0), "+z");
+
+        painter.end();
     }
     if (ShowType_STL == m_ShowType)
     {
@@ -198,6 +234,9 @@ void ModelWidget::paintGL()
     }
     if (ShowType_PLY == m_ShowType)
     {
+        // 重新绑定ShaderProgram，继续绘制点云
+        m_shaderProgram.bind();
+        // 渲染点云
         m_vaoPLY.bind();
         glDrawArrays(GL_POINTS, 0, pointVertices.size());
         m_vaoPLY.release();
@@ -258,4 +297,21 @@ void ModelWidget::translate_point(QPoint &p_ab)
     // y轴正半轴朝上，咱们这里要转换成  原点在在窗口中间，y轴正半轴 朝上；
     p_ab.setX(x);
     p_ab.setY(y);
+}
+
+// 辅助函数：将3D点投影到屏幕坐标
+QPointF ModelWidget::projectToScreen(const QVector3D &point, const QMatrix4x4 &mvp, const QRect &viewport)
+{
+    // 将3D点转换为裁剪空间
+    QVector4D clipPos = mvp * QVector4D(point, 1.0f);
+    if (clipPos.w() == 0) return QPointF();
+
+    // 透视除法，得到标准化设备坐标（NDC）
+    QVector3D ndc(clipPos.x() / clipPos.w(), clipPos.y() / clipPos.w(), clipPos.z() / clipPos.w());
+
+    // 将NDC映射到视口坐标
+    float x = (ndc.x() + 1.0f) * 0.5f * viewport.width() + viewport.x();
+    float y = (1.0f - ndc.y()) * 0.5f * viewport.height() + viewport.y(); // Y轴翻转
+
+    return QPointF(x, y);
 }
