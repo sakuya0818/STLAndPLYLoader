@@ -148,7 +148,8 @@ void ModelWidget::showCoordinates(bool bShow)
 // 用来绘制OpenGL的窗口，只要有更新发生，这个函数就会被调用
 void ModelWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 执行这两个缓冲里面的 东西
+    // 清屏并设置OpenGL状态
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaderProgram.bind();
 
     QMatrix4x4 projection;

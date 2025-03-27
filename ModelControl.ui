@@ -85,7 +85,7 @@ QSlider::handle:horizontal:hover {
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0">
         <property name="topMargin">
          <number>0</number>
         </property>
@@ -100,13 +100,6 @@ QSlider::handle:horizontal:hover {
          <widget class="QCheckBox" name="checkBoxCoordinate">
           <property name="text">
            <string>世界坐标系</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxDesk">
-          <property name="text">
-           <string>试验台</string>
           </property>
          </widget>
         </item>

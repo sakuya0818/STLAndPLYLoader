@@ -4,10 +4,9 @@
 #include <QDataStream>
 #include <QDebug>
 #include <QDateTime>
+#include <cstring>
 #include <string.h>
-#if defined(WIN32) || defined(WIN64)
-
-#else
+#ifdef Q_OS_UNIX
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>

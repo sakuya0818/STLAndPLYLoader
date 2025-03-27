@@ -9,8 +9,6 @@ ModelControl::ModelControl(QWidget *parent) :
     ui(new Ui::ModelControl)
 {
     ui->setupUi(this);
-
-    ui->checkBoxDesk->hide();
 }
 
 ModelControl::~ModelControl()

@@ -163,8 +163,8 @@ void SpaceCoordinatesGLWiget::initializeGL()
     m_vaoSTL.create();
     m_vaoPLY.create();
 
-    // 指定点阵化点的直径大小为1
-    glPointSize(1.0f);
+    // 允许顶点着色器控制点大小
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
     // 绘制网格和坐标系
     drawGrid();

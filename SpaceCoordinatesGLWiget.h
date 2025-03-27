@@ -4,17 +4,16 @@
 #include "Camera.h"
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions_4_5_Core>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
 #include <QMouseEvent>
 #include <QDateTime>
 #include <QPainter>
 #include <QDebug>
 
 // 显示模型的OpenGL基类，提供了鼠标旋转、方法缩小、平移、网格、坐标系等基本功能
-class SpaceCoordinatesGLWiget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
+class SpaceCoordinatesGLWiget : public QOpenGLWidget, public QOpenGLExtraFunctions
 {
     Q_OBJECT
 public:
@@ -59,7 +58,7 @@ protected:
     QOpenGLVertexArrayObject m_vaoCoordinates;
     QOpenGLVertexArrayObject m_vaoSTL;
     QOpenGLVertexArrayObject m_vaoPLY;
-    // 创建VBO对像
+    // 创建VBO对象
     GLuint m_vbo[4];
     // 创建QOpenGLShaderProgram对象
     QOpenGLShaderProgram m_shaderProgram;
