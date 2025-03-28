@@ -1,10 +1,10 @@
 #include "Camera.h"
 
 Camera::Camera(QVector3D position, QVector3D front, QVector3D up)
-    : scrollSensitivity(SENSITIVITY)
-    , m_position(position)
-    , m_worldUp(up)
+    : m_position(position)
     , m_front(front)
+    , m_worldUp(up)
+    , scrollSensitivity(SENSITIVITY)
 {
 
 }

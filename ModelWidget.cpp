@@ -67,8 +67,6 @@ void ModelWidget::showSTLModel(QString stlPath)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
     glEnableVertexAttribArray(1);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 给上下文设置 清屏颜色
-    glEnable(GL_DEPTH_TEST);   //  让上下启动深度测试
 
     m_vaoSTL.release();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -121,9 +119,6 @@ void ModelWidget::showPLYModel(QString plyPath)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
     }
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 给上下文设置清屏颜色
-    glEnable(GL_DEPTH_TEST);   //  让上下启动深度测试
 
     m_vaoPLY.release();
     glBindBuffer(GL_ARRAY_BUFFER, 0);

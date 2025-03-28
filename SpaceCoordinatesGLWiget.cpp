@@ -166,6 +166,9 @@ void SpaceCoordinatesGLWiget::initializeGL()
     // 允许顶点着色器控制点大小
     glEnable(GL_PROGRAM_POINT_SIZE);
 
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 给上下文设置 清屏颜色
+    glEnable(GL_DEPTH_TEST);   //  让上下启动深度测试
+
     // 绘制网格和坐标系
     drawGrid();
     drawCoordinates();
