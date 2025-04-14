@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 
@@ -11,12 +11,11 @@ out vec3 Normal;
 
 void main()
 {
-    gl_Position = projection*view*model*vec4(aPos,1.0f);
-    
-    FragPos = vec3(model * vec4(aPos, 1.0));// 点的位置
-    //Normal = aNormal;//因为面要进行转动，所以这样的话， 随着面的转动，法向量不会转， 效果也会很怪异
-
-    //Normal = vec3(projection*view*model * vec4(aNormal, 1.0));//这样 暗部 才会有透视的情况，才会看起来正常一点
+    gl_Position = projection * view * model * vec4(aPos, 1.0f);
+    // 计算经过模型变换后的世界坐标，传给片段着色器
+    FragPos = vec3(model * vec4(aPos, 1.0));
+//    Normal = vec3(projection*view*model * vec4(aNormal, 1.0));//这样 暗部 才会有透视的情况，才会看起来正常一点
+    // 随着面的转动，修改法向量一起变化
     Normal = mat3(transpose(inverse(model))) * aNormal;
 }
  

@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 out vec4 FragColor;
 
 struct Material {
@@ -10,7 +10,6 @@ struct Material {
 
 struct Light {
     vec3 direction;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -21,24 +20,26 @@ in vec3 Normal;
   
 uniform vec3 viewPos;
 uniform Material material;
-// uniform Light light;
-// uniform Light light1;
 uniform Light light1;
 uniform Light light2;
+
+uniform vec3 highLightColor;
+uniform float isHighLight;
 
 vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir);
 
 void main()
-{ 
-
-    // 属性
+{
+    // 计算正常光照颜色
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
-   
-    vec3 result = CalcDirLight(light1, norm, viewDir);// 向后的平行光
-    result += CalcDirLight(light2, norm, viewDir);// 向前的平行光
-      
-    FragColor = vec4(result, 1.0);
+    vec3 result = CalcDirLight(light1, norm, viewDir);
+    result += CalcDirLight(light2, norm, viewDir);
+
+    // 使用mix函数线性混合颜色（代替if判断）
+    vec3 finalColor = mix(result, highLightColor, isHighLight);
+
+    FragColor = vec4(finalColor, 1.0);
 } 
 
 vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir)

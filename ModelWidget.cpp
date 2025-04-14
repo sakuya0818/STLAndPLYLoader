@@ -203,7 +203,15 @@ void ModelWidget::paintGL()
     }
     if (ShowType_STL == m_ShowType)
     {
+        // ========== 第一阶段：绘制原模型到模板缓冲 ==========
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);  // 总是通过测试
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // 通过时替换为1
+        glStencilMask(0xFF); // 启用模板写入
+
+        m_shaderProgram.bind();
         // 2 代表要显示stl文件， 下面对显示stl 的着色器 进行一定的配置
+        m_shaderProgram.setUniformValue("isHighLight", 0.0f);
         m_shaderProgram.setUniformValue("viewPos", m_camera->m_position);//这个 需要动态的来更新，因为 摄像机的位置会变化
         //1.0f, 0.5f, 0.31f橙色
         m_shaderProgram.setUniformValue("material.ambient", QVector3D(0.2f, 0.8f, 0.8f));
@@ -227,6 +235,33 @@ void ModelWidget::paintGL()
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
             m_vaoSTL.release();
         }
+
+        // ========== 第二阶段：绘制放大轮廓 ==========
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // 只绘制模板值不等于1的区域
+        glStencilMask(0x00); // 禁用模板写入
+        glDisable(GL_DEPTH_TEST); // 关键：禁用深度测试
+
+        // 设置轮廓颜色（在着色器中添加新的uniform）
+        m_shaderProgram.setUniformValue("highLightColor", QVector3D(1.0f, 1.0f, 1.0f)); // 白色
+        m_shaderProgram.setUniformValue("isHighLight", 1.0f); // 启用颜色覆盖
+
+        // 应用缩放矩阵（建议使用模型矩阵的5%放大）
+        QMatrix4x4 outlineModel = modelMatrix;
+        outlineModel.scale(1.05f);
+        m_shaderProgram.setUniformValue("model", outlineModel);
+
+        // 重新绘制放大后的模型
+        if (vertices.size() > 0) {
+            m_vaoSTL.bind();
+            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+            m_vaoSTL.release();
+        }
+
+        // ========== 恢复状态 ==========
+        glStencilMask(0xFF);
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_STENCIL_TEST);
+        m_shaderProgram.setUniformValue("model", modelMatrix); // 恢复原始模型矩阵
     }
     if (ShowType_PLY == m_ShowType)
     {
