@@ -69,7 +69,6 @@ void ModelWidget::showSTLModel(QString stlPath)
     glEnableVertexAttribArray(1);
 
     m_vaoSTL.release();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     update();
 }
@@ -121,7 +120,6 @@ void ModelWidget::showPLYModel(QString plyPath)
     }
 
     m_vaoPLY.release();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     update();
 }
@@ -140,6 +138,13 @@ void ModelWidget::showCoordinates(bool bShow)
     update();
 }
 
+void ModelWidget::showHighLight(bool bShow)
+{
+    m_bDrawHighLight = bShow;
+
+    update();
+}
+
 // 用来绘制OpenGL的窗口，只要有更新发生，这个函数就会被调用
 void ModelWidget::paintGL()
 {
@@ -149,9 +154,10 @@ void ModelWidget::paintGL()
 
     QMatrix4x4 projection;
     projection.perspective(45.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 200.f);
+    m_shaderProgram.setUniformValue("model", modelMatrix);
     m_shaderProgram.setUniformValue("projection", projection);
     m_shaderProgram.setUniformValue("view", m_camera->getViewMatrix());
-    m_shaderProgram.setUniformValue("model", modelMatrix);
+    m_shaderProgram.setUniformValue("normalMatrix", modelMatrix.inverted().transposed().normalMatrix());
 
     if (m_bDrawGrid)
     {

@@ -58,3 +58,15 @@ void ModelControl::on_checkBoxCoordinate_stateChanged(int arg1)
         emit sigShowCoordinates(false);
     }
 }
+
+void ModelControl::on_checkBoxHighLight_stateChanged(int arg1)
+{
+    if (arg1 == 2)
+    {
+        emit sigShowHighLight(true);
+    }
+    else
+    {
+        emit sigShowHighLight(false);
+    }
+}

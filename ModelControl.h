@@ -24,6 +24,8 @@ signals:
 
     void sigShowCoordinates(bool bShow);
 
+    void sigShowHighLight(bool bShow);
+
 private slots:
     void on_Btn_ImportSTL_clicked();
 
@@ -32,6 +34,8 @@ private slots:
     void on_checkBoxCoordinate_stateChanged(int arg1);
 
     void on_Btn_ImportPLY_clicked();
+
+    void on_checkBoxHighLight_stateChanged(int arg1);
 
 private:
     Ui::ModelControl *ui;

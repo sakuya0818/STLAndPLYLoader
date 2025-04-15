@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->modelControl, &ModelControl::sigShowPLYModel, ui->modelWidget, &ModelWidget::showPLYModel);
     connect(ui->modelControl, &ModelControl::sigShowGrid, ui->modelWidget, &ModelWidget::showGrid);
     connect(ui->modelControl, &ModelControl::sigShowCoordinates, ui->modelWidget, &ModelWidget::showCoordinates);
+    connect(ui->modelControl, &ModelControl::sigShowHighLight, ui->modelWidget, &ModelWidget::showHighLight);
 }
 
 MainWindow::~MainWindow()

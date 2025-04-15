@@ -39,6 +39,8 @@ public slots:
 
     void showCoordinates(bool bShow);
 
+    void showHighLight(bool bShow);
+
 private:
     QVector<GLfloat> vertices;
     QVector<GLfloat> pointVertices;
@@ -46,6 +48,7 @@ private:
     ShowType m_ShowType;        // 绘制的文件类型
     bool m_bDrawGrid;           // 是否绘制网格
     bool m_bDrawCoordinates;    // 是否绘制坐标轴
+    bool m_bDrawHighLight;      // 是否绘制高亮边框
 
     QMatrix4x4 modelMatrix;  // 模式矩阵
     QMatrix4x4 modelUse;// 这相当于一个中间值
