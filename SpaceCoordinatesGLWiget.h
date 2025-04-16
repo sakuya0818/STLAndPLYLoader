@@ -61,7 +61,8 @@ protected:
     // 创建VBO对象
     GLuint m_vbo[4];
     // 创建QOpenGLShaderProgram对象
-    QOpenGLShaderProgram m_shaderProgram;
+    QOpenGLShaderProgram m_stlShaderProgram;
+    QOpenGLShaderProgram m_plyShaderProgram;
     // 相机对象
     Camera *m_camera;
     // 点数据

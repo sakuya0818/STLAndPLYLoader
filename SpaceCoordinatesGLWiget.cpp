@@ -146,13 +146,14 @@ void SpaceCoordinatesGLWiget::initializeGL()
     // 在调用任何OpenGL函数之前调用，以确保能够正确加载和使用OpenGL函数
     initializeOpenGLFunctions();
 
-    m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Res/Shader/vertex_object.vert");
-    m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Res/Shader/fragment_object.frag");
+    m_stlShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Res/Shader/vertex_stl.vert");
+    m_stlShaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Res/Shader/fragment_stl.frag");
+    m_stlShaderProgram.link();
 
     // 初始化几何着色器程序
-//    m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Res/Shader/vertex.vert");
-//    m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Res/Shader/fragment.frag");
-    m_shaderProgram.link();
+    m_plyShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Res/Shader/vertex.vert");
+    m_plyShaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Res/Shader/fragment.frag");
+    m_plyShaderProgram.link();
 
     //建立摄像机
     m_camera = new Camera();

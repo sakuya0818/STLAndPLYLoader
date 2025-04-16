@@ -45,15 +45,15 @@ private:
     QVector<GLfloat> vertices;
     QVector<GLfloat> pointVertices;
 
-    ShowType m_ShowType;        // 绘制的文件类型
-    bool m_bDrawGrid;           // 是否绘制网格
-    bool m_bDrawCoordinates;    // 是否绘制坐标轴
-    bool m_bDrawHighLight;      // 是否绘制高亮边框
+    ShowType m_ShowType;                // 绘制的文件类型
+    bool m_bDrawGrid = false;           // 是否绘制网格
+    bool m_bDrawCoordinates = false;    // 是否绘制坐标轴
+    bool m_bDrawHighLight = false;      // 是否绘制高亮边框
 
-    QMatrix4x4 modelMatrix;  // 模式矩阵
-    QMatrix4x4 modelUse;// 这相当于一个中间值
-    QMatrix4x4 modelSave;  // 上一次鼠标点击移动过后的 模式矩阵
-    QPoint press_position;  // 按下鼠标左键时的位置
+    QMatrix4x4 modelMatrix;             // 模式矩阵
+    QMatrix4x4 modelUse;                // 这相当于一个中间值
+    QMatrix4x4 modelSave;               // 上一次鼠标点击移动过后的 模式矩阵
+    QPoint press_position;              // 按下鼠标左键时的位置
 };
 
 #endif // MODELWIDGET_H

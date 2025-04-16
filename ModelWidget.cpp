@@ -3,8 +3,6 @@
 ModelWidget::ModelWidget(QWidget *parent)
     :SpaceCoordinatesGLWiget(parent)
     , m_ShowType(ShowType_STL)
-    , m_bDrawGrid(false)
-    , m_bDrawCoordinates(false)
 {
 
 }
@@ -150,28 +148,116 @@ void ModelWidget::paintGL()
 {
     // 清屏并设置OpenGL状态
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_shaderProgram.bind();
+    // QPainter每次绘制时，内部会关闭深度测试，此处重新开启，否则模型会出现孔洞
+    glEnable(GL_DEPTH_TEST);
 
+    m_plyShaderProgram.bind();
     QMatrix4x4 projection;
     projection.perspective(45.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 200.f);
-    m_shaderProgram.setUniformValue("model", modelMatrix);
-    m_shaderProgram.setUniformValue("projection", projection);
-    m_shaderProgram.setUniformValue("view", m_camera->getViewMatrix());
-    m_shaderProgram.setUniformValue("normalMatrix", modelMatrix.inverted().transposed().normalMatrix());
+    m_plyShaderProgram.setUniformValue("model", modelMatrix);
+    m_plyShaderProgram.setUniformValue("projection", projection);
+    m_plyShaderProgram.setUniformValue("view", m_camera->getViewMatrix());
 
+    // 绘制网格
     if (m_bDrawGrid)
     {
         m_vaoGrid.bind();
         glDrawArrays(GL_LINES, 0, 84);
         m_vaoGrid.release();
     }
+
+    if (ShowType_PLY == m_ShowType)
+    {
+        m_plyShaderProgram.bind();
+        // 绘制点云
+        m_vaoPLY.bind();
+        glDrawArrays(GL_POINTS, 0, pointVertices.size() / 6);
+        m_vaoPLY.release();
+        m_plyShaderProgram.release();
+    }
+    else if (ShowType_STL == m_ShowType)
+    {
+        if (m_bDrawHighLight)
+        {
+            // 第一阶段：绘制原模型到模板缓冲
+            glEnable(GL_STENCIL_TEST);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);  // 总是通过测试
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // 通过时替换为1
+            glStencilMask(0xFF); // 启用模板写入
+        }
+
+        m_stlShaderProgram.bind();
+        // 设置MVP矩阵和法线矩阵
+        m_stlShaderProgram.setUniformValue("model", modelMatrix);
+        m_stlShaderProgram.setUniformValue("projection", projection);
+        m_stlShaderProgram.setUniformValue("view", m_camera->getViewMatrix());
+        m_stlShaderProgram.setUniformValue("normalMatrix", modelMatrix.inverted().transposed().normalMatrix());
+        // 对显示 stl 的着色器进行一定的配置
+        m_stlShaderProgram.setUniformValue("isHighLight", 0.0f);
+        m_stlShaderProgram.setUniformValue("viewPos", m_camera->m_position);    // 需要动态更新，因为摄像机的位置会变化
+        m_stlShaderProgram.setUniformValue("material.ambient", QVector3D(0.2f, 0.8f, 0.8f));
+        m_stlShaderProgram.setUniformValue("material.diffuse", QVector3D(0.2f, 0.8f, 0.8f));
+        m_stlShaderProgram.setUniformValue("material.specular", QVector3D(0.05f, 0.05f, 0.05f));
+        m_stlShaderProgram.setUniformValue("material.shininess", 32.0f);        // 材质
+
+        m_stlShaderProgram.setUniformValue("light1.ambient", QVector3D(0.2f, 0.2f, 0.2f));
+        m_stlShaderProgram.setUniformValue("light1.diffuse", QVector3D(0.5f, 0.5f, 0.5f));      // 将光照调暗了一些以搭配场景
+        m_stlShaderProgram.setUniformValue("light1.specular", QVector3D(1.0f, 1.0f, 1.0f));
+        m_stlShaderProgram.setUniformValue("light1.direction", QVector3D(0.0f, 0.0f, 3.0f));    // 前平行光的方向
+
+        m_stlShaderProgram.setUniformValue("light2.ambient", QVector3D(0.2f, 0.2f, 0.2f));
+        m_stlShaderProgram.setUniformValue("light2.diffuse", QVector3D(0.5f, 0.5f, 0.5f));      // 将光照调暗了一些以搭配场景
+        m_stlShaderProgram.setUniformValue("light2.specular", QVector3D(1.0f, 1.0f, 1.0f));
+        m_stlShaderProgram.setUniformValue("light2.direction", QVector3D(0.0f, 0.0f, -3.0f));   // 后平行光的方向
+
+        if (vertices.size() > 0)
+        {
+            m_vaoSTL.bind();
+            glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+            m_vaoSTL.release();
+        }
+
+        if (m_bDrawHighLight)
+        {
+            // 第二阶段：绘制放大轮廓
+            glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // 只绘制模板值不等于1的区域
+            glStencilMask(0x00); // 禁用模板写入
+            glDisable(GL_DEPTH_TEST); // 关键：禁用深度测试
+
+            // 设置轮廓颜色（在着色器中添加新的uniform）
+            m_stlShaderProgram.setUniformValue("highLightColor", QVector3D(1.0f, 1.0f, 1.0f)); // 白色
+            m_stlShaderProgram.setUniformValue("isHighLight", 1.0f); // 启用颜色覆盖
+
+            // 应用缩放矩阵（建议使用模型矩阵的5%放大）
+            QMatrix4x4 outlineModel = modelMatrix;
+            outlineModel.scale(1.05f);
+            m_stlShaderProgram.setUniformValue("model", outlineModel);
+
+            // 重新绘制放大后的模型
+            if (vertices.size() > 0) {
+                m_vaoSTL.bind();
+                glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+                m_vaoSTL.release();
+            }
+
+            // 恢复状态
+            glStencilMask(0xFF);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_STENCIL_TEST);
+            m_stlShaderProgram.setUniformValue("model", modelMatrix); // 恢复原始模型矩阵
+        }
+        m_stlShaderProgram.release();
+    }
+
+    // 最后绘制坐标轴，不用再把坐标轴加入模板测试
     if (m_bDrawCoordinates)
     {
+        m_plyShaderProgram.bind();
         m_vaoCoordinates.bind();
         glDrawArrays(GL_LINES, 0, 512);
         m_vaoCoordinates.release();
         // 释放ShaderProgram，准备使用QPainter
-        m_shaderProgram.release();
+        m_plyShaderProgram.release();
 
         // 计算坐标轴末端点的屏幕坐标
         QMatrix4x4 mvp = projection * m_camera->getViewMatrix() * modelMatrix;
@@ -193,7 +279,7 @@ void ModelWidget::paintGL()
 
         // 使用QPainter绘制标签
         QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setFont(QFont("Arial", 16));
         painter.setPen(Qt::red);
         // 绘制标签（稍微偏移以避免覆盖坐标轴末端）
@@ -204,81 +290,9 @@ void ModelWidget::paintGL()
         painter.setPen(Qt::blue);
         painter.drawText(screenMinusZ + QPointF(-5, 0), "-z");
         painter.drawText(screenZ + QPointF(5, 0), "+z");
-
         painter.end();
     }
-    if (ShowType_STL == m_ShowType)
-    {
-        // ========== 第一阶段：绘制原模型到模板缓冲 ==========
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);  // 总是通过测试
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // 通过时替换为1
-        glStencilMask(0xFF); // 启用模板写入
-
-        m_shaderProgram.bind();
-        // 2 代表要显示stl文件， 下面对显示stl 的着色器 进行一定的配置
-        m_shaderProgram.setUniformValue("isHighLight", 0.0f);
-        m_shaderProgram.setUniformValue("viewPos", m_camera->m_position);//这个 需要动态的来更新，因为 摄像机的位置会变化
-        //1.0f, 0.5f, 0.31f橙色
-        m_shaderProgram.setUniformValue("material.ambient", QVector3D(0.2f, 0.8f, 0.8f));
-        m_shaderProgram.setUniformValue("material.diffuse", QVector3D(0.2f, 0.8f, 0.8f));
-        m_shaderProgram.setUniformValue("material.specular", QVector3D(0.05f, 0.05f, 0.05f));
-        m_shaderProgram.setUniformValue("material.shininess", 32.0f);// 材质
-
-        m_shaderProgram.setUniformValue("light1.ambient", QVector3D(0.2f, 0.2f, 0.2f));
-        m_shaderProgram.setUniformValue("light1.diffuse", QVector3D(0.5f, 0.5f, 0.5f)); // 将光照调暗了一些以搭配场景
-        m_shaderProgram.setUniformValue("light1.specular", QVector3D(1.0f, 1.0f, 1.0f));
-        m_shaderProgram.setUniformValue("light1.direction", QVector3D(0.0f, 0.0f, 3.0f));//  前平行光的方向
-
-        m_shaderProgram.setUniformValue("light2.ambient", QVector3D(0.2f, 0.2f, 0.2f));
-        m_shaderProgram.setUniformValue("light2.diffuse", QVector3D(0.5f, 0.5f, 0.5f)); // 将光照调暗了一些以搭配场景
-        m_shaderProgram.setUniformValue("light2.specular", QVector3D(1.0f, 1.0f, 1.0f));
-        m_shaderProgram.setUniformValue("light2.direction", QVector3D(0.0f, 0.0f, -3.0f));//  后平行光的方向
-
-        if (vertices.size() > 0)
-        {
-            m_vaoSTL.bind();
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-            m_vaoSTL.release();
-        }
-
-        // ========== 第二阶段：绘制放大轮廓 ==========
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // 只绘制模板值不等于1的区域
-        glStencilMask(0x00); // 禁用模板写入
-        glDisable(GL_DEPTH_TEST); // 关键：禁用深度测试
-
-        // 设置轮廓颜色（在着色器中添加新的uniform）
-        m_shaderProgram.setUniformValue("highLightColor", QVector3D(1.0f, 1.0f, 1.0f)); // 白色
-        m_shaderProgram.setUniformValue("isHighLight", 1.0f); // 启用颜色覆盖
-
-        // 应用缩放矩阵（建议使用模型矩阵的5%放大）
-        QMatrix4x4 outlineModel = modelMatrix;
-        outlineModel.scale(1.05f);
-        m_shaderProgram.setUniformValue("model", outlineModel);
-
-        // 重新绘制放大后的模型
-        if (vertices.size() > 0) {
-            m_vaoSTL.bind();
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-            m_vaoSTL.release();
-        }
-
-        // ========== 恢复状态 ==========
-        glStencilMask(0xFF);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_STENCIL_TEST);
-        m_shaderProgram.setUniformValue("model", modelMatrix); // 恢复原始模型矩阵
-    }
-    if (ShowType_PLY == m_ShowType)
-    {
-        // 重新绑定ShaderProgram，继续绘制点云
-        m_shaderProgram.bind();
-        // 渲染点云
-        m_vaoPLY.bind();
-        glDrawArrays(GL_POINTS, 0, pointVertices.size());
-        m_vaoPLY.release();
-    }
-    m_shaderProgram.release();
+    m_plyShaderProgram.release();
 
     update();
 }
