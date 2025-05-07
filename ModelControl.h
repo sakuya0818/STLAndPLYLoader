@@ -18,6 +18,8 @@ public:
 signals:
     void sigShowSTLModel(QString stlPath);
 
+    void sigShowMultiSTLModel(QStringList stlPath);
+
     void sigShowPLYModel(QString plyPath);
 
     void sigShowGrid(bool bShow);
@@ -29,11 +31,13 @@ signals:
 private slots:
     void on_Btn_ImportSTL_clicked();
 
+    void on_Btn_ImportMultiSTL_clicked();
+
+    void on_Btn_ImportPLY_clicked();
+
     void on_checkBoxGrid_stateChanged(int arg1);
 
     void on_checkBoxCoordinate_stateChanged(int arg1);
-
-    void on_Btn_ImportPLY_clicked();
 
     void on_checkBoxHighLight_stateChanged(int arg1);
 

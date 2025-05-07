@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->splitter->setSizes(sizes);
 
     connect(ui->modelControl, &ModelControl::sigShowSTLModel, ui->modelWidget, &ModelWidget::showSTLModel);
+    connect(ui->modelControl, &ModelControl::sigShowMultiSTLModel, ui->modelWidget, &ModelWidget::showMultiSTLModel);
     connect(ui->modelControl, &ModelControl::sigShowPLYModel, ui->modelWidget, &ModelWidget::showPLYModel);
     connect(ui->modelControl, &ModelControl::sigShowGrid, ui->modelWidget, &ModelWidget::showGrid);
     connect(ui->modelControl, &ModelControl::sigShowCoordinates, ui->modelWidget, &ModelWidget::showCoordinates);

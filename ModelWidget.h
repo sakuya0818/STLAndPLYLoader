@@ -33,6 +33,8 @@ protected:
 public slots:
     void showSTLModel(QString stlPath);
 
+    void showMultiSTLModel(QStringList stlPaths);
+
     void showPLYModel(QString plyPath);
 
     void showGrid(bool bShow);

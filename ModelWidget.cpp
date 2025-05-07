@@ -71,6 +71,14 @@ void ModelWidget::showSTLModel(QString stlPath)
     update();
 }
 
+void ModelWidget::showMultiSTLModel(QStringList stlPaths)
+{
+    for (auto stlPath : stlPaths)
+    {
+        qDebug() << stlPath;
+    }
+}
+
 void ModelWidget::showPLYModel(QString plyPath)
 {
     PLYFileLoader *pointCloud = new PLYFileLoader(plyPath);

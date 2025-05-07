@@ -133,13 +133,20 @@ QSlider::handle:horizontal:hover {
            <property name="title">
             <string>模型控制</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0" columnstretch="0">
+           <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0" columnstretch="0">
             <property name="topMargin">
              <number>20</number>
             </property>
             <property name="bottomMargin">
              <number>0</number>
             </property>
+            <item row="2" column="0">
+             <widget class="QPushButton" name="Btn_ImportPLY">
+              <property name="text">
+               <string>导入ply模型</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QPushButton" name="Btn_ImportSTL">
               <property name="text">
@@ -148,9 +155,9 @@ QSlider::handle:horizontal:hover {
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QPushButton" name="Btn_ImportPLY">
+             <widget class="QPushButton" name="Btn_ImportMultiSTL">
               <property name="text">
-               <string>导入ply模型</string>
+               <string>导入多个stl模型</string>
               </property>
              </widget>
             </item>
