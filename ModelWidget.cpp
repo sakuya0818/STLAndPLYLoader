@@ -73,10 +73,60 @@ void ModelWidget::showSTLModel(QString stlPath)
 
 void ModelWidget::showMultiSTLModel(QStringList stlPaths)
 {
+    m_ShowType = ShowType_STL;
+    vertices.clear();
     for (auto stlPath : stlPaths)
     {
         qDebug() << stlPath;
+        STLFileLoader *stlModel = new STLFileLoader(stlPath);
+        QList<STLTriangle> triangles = stlModel->getSTLData();
+        m_pointData.clear();
+        QVector<GLfloat> normalList;
+        foreach(STLTriangle tri, triangles)
+        {
+            for (int j = 0; j < 3; ++j) {
+                QVector3D vertex = tri.getVertex(j);
+                m_pointData.push_back(vertex);
+                QVector3D normal = tri.getNormal();
+                normalList.push_back(normal.x());
+                normalList.push_back(normal.y());
+                normalList.push_back(normal.z());
+            }
+        }
+        normalizePointData(m_pointData);
+        // 将所有的点数据放入点数据容器中
+        QVector<QVector3D>::iterator it = m_pointData.begin();
+        QVector<GLfloat> ::iterator itNormal = normalList.begin();
+        for (; it != m_pointData.end(); ++it)
+        {
+            vertices.push_back(it->x());
+            vertices.push_back(it->y());
+            vertices.push_back(it->z());
+
+            // 装入向量坐标 同一个三角片面 使用相同的法向量
+            vertices.push_back(*itNormal);
+            ++itNormal;
+            vertices.push_back(*itNormal);
+            ++itNormal;
+            vertices.push_back(*itNormal);
+            ++itNormal;
+        }
     }
+    makeCurrent();
+
+    m_vaoSTL.bind();
+    // 生成一个缓冲对象名称
+    glGenBuffers(1, &m_vbo[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
+    glEnableVertexAttribArray(1);
+
+    m_vaoSTL.release();
+
+    update();
 }
 
 void ModelWidget::showPLYModel(QString plyPath)
