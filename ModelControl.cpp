@@ -18,11 +18,12 @@ ModelControl::~ModelControl()
 
 void ModelControl::on_Btn_ImportSTL_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("open  file"), "", tr("point cloud files( *.stl) ;; All files (*.*)"));
-    if (!fileName.isEmpty())
-    {
-        emit sigShowSTLModel(fileName);
-    }
+//    QString fileName = QFileDialog::getOpenFileName(this, tr("open  file"), "", tr("point cloud files( *.stl) ;; All files (*.*)"));
+//    if (!fileName.isEmpty())
+//    {
+//        emit sigShowSTLModel(fileName);
+//    }
+    emit sigShowSTLModel("C:/Users/JXD/Desktop/Plane001.stl");
 }
 
 void ModelControl::on_Btn_ImportMultiSTL_clicked()

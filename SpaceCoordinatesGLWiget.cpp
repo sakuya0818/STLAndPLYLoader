@@ -281,7 +281,7 @@ void SpaceCoordinatesGLWiget::getCenterPoint(QVector3D &vec)
     {
         return;
     }
-    //取重心
+    // 取重心
     /*float xSum = 0;
     float ySum = 0;
     float zSum = 0;
@@ -295,7 +295,7 @@ void SpaceCoordinatesGLWiget::getCenterPoint(QVector3D &vec)
     vec.setY(ySum / pointData.size());
     vec.setZ(zSum / pointData.size());*/
 
-    //取中心， 因为人的眼睛 习惯上 会把物体的中心当做中心点，而不是 重心，取重心的话，旋转效果可能会很怪异
+    // 取中心， 因为人的眼睛 习惯上 会把物体的中心当做中心点，而不是 重心，取重心的话，旋转效果可能会很怪异
     vec.setX((m_maxCoordinate.x() + m_minCoordinate.x()) / 2);
     vec.setY((m_maxCoordinate.y() + m_minCoordinate.y()) / 2);
     vec.setZ((m_maxCoordinate.z() + m_minCoordinate.z()) / 2);

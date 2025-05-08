@@ -75,13 +75,12 @@ void ModelWidget::showMultiSTLModel(QStringList stlPaths)
 {
     m_ShowType = ShowType_STL;
     vertices.clear();
+    m_pointData.clear();
+    QVector<GLfloat> normalList;
     for (auto stlPath : stlPaths)
     {
-        qDebug() << stlPath;
         STLFileLoader *stlModel = new STLFileLoader(stlPath);
         QList<STLTriangle> triangles = stlModel->getSTLData();
-        m_pointData.clear();
-        QVector<GLfloat> normalList;
         foreach(STLTriangle tri, triangles)
         {
             for (int j = 0; j < 3; ++j) {
@@ -93,25 +92,26 @@ void ModelWidget::showMultiSTLModel(QStringList stlPaths)
                 normalList.push_back(normal.z());
             }
         }
-        normalizePointData(m_pointData);
-        // 将所有的点数据放入点数据容器中
-        QVector<QVector3D>::iterator it = m_pointData.begin();
-        QVector<GLfloat> ::iterator itNormal = normalList.begin();
-        for (; it != m_pointData.end(); ++it)
-        {
-            vertices.push_back(it->x());
-            vertices.push_back(it->y());
-            vertices.push_back(it->z());
-
-            // 装入向量坐标 同一个三角片面 使用相同的法向量
-            vertices.push_back(*itNormal);
-            ++itNormal;
-            vertices.push_back(*itNormal);
-            ++itNormal;
-            vertices.push_back(*itNormal);
-            ++itNormal;
-        }
     }
+    normalizePointData(m_pointData);
+    // 将所有的点数据放入点数据容器中
+    QVector<QVector3D>::iterator it = m_pointData.begin();
+    QVector<GLfloat> ::iterator itNormal = normalList.begin();
+    for (; it != m_pointData.end(); ++it)
+    {
+        vertices.push_back(it->x());
+        vertices.push_back(it->y());
+        vertices.push_back(it->z());
+
+        // 装入向量坐标 同一个三角片面 使用相同的法向量
+        vertices.push_back(*itNormal);
+        ++itNormal;
+        vertices.push_back(*itNormal);
+        ++itNormal;
+        vertices.push_back(*itNormal);
+        ++itNormal;
+    }
+
     makeCurrent();
 
     m_vaoSTL.bind();
