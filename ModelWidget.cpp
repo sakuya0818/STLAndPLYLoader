@@ -213,8 +213,6 @@ void ModelWidget::showHighLight(bool bShow)
 {
     m_bDrawHighLight = bShow;
 
-    m_selectedModelIndex = 3;
-
     update();
 }
 
@@ -295,6 +293,13 @@ void ModelWidget::paintGL()
                 glDrawArrays(GL_TRIANGLES, 0, range.startIndex);
                 m_stlShaderProgram.setUniformValue("material.ambient", QVector3D(1.0f, 0.0f, 0.0f));
                 glDrawArrays(GL_TRIANGLES, range.startIndex, range.vertexCount);
+                m_stlShaderProgram.setUniformValue("material.ambient", QVector3D(0.2f, 0.8f, 0.8f));
+                glDrawArrays(GL_TRIANGLES, range.startIndex + range.vertexCount, vertices.size() / 6 - range.startIndex - range.vertexCount);
+            }
+            else
+            {
+                // 渲染所有模型
+                glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
             }
 
             m_vaoSTL.release();
