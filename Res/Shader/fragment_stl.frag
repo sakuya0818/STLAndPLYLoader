@@ -40,7 +40,7 @@ void main()
     vec3 finalColor = mix(result, highLightColor, isHighLight);
 
     FragColor = vec4(finalColor, 1.0);
-} 
+}
 
 vec3 CalcDirLight(Light light, vec3 normal, vec3 viewDir)
 {

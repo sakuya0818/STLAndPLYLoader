@@ -11,6 +11,12 @@ enum ShowType
     ShowType_PLY        // 点云文件
 };
 
+struct ModelRange {
+    int startIndex;
+    int vertexCount;
+    QString modelName;
+};
+
 class ModelWidget : public SpaceCoordinatesGLWiget
 {
     Q_OBJECT
@@ -56,6 +62,9 @@ private:
     QMatrix4x4 modelUse;                // 这相当于一个中间值
     QMatrix4x4 modelSave;               // 上一次鼠标点击移动过后的 模式矩阵
     QPoint press_position;              // 按下鼠标左键时的位置
+
+    QVector<ModelRange> m_modelRanges;
+    int m_selectedModelIndex = -1;
 };
 
 #endif // MODELWIDGET_H

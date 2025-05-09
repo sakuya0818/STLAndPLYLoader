@@ -7,6 +7,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QFileInfo>
 #include <QMouseEvent>
 #include <QDateTime>
 #include <QPainter>

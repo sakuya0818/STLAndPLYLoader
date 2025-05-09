@@ -76,23 +76,38 @@ void ModelWidget::showMultiSTLModel(QStringList stlPaths)
     m_ShowType = ShowType_STL;
     vertices.clear();
     m_pointData.clear();
+    m_modelRanges.clear();
     QVector<GLfloat> normalList;
+
+    int currentVertexIndex = 0;
+
     for (auto stlPath : stlPaths)
     {
+        ModelRange range;
+        range.startIndex = currentVertexIndex;
+        range.modelName = QFileInfo(stlPath).fileName();
+
         STLFileLoader *stlModel = new STLFileLoader(stlPath);
         QList<STLTriangle> triangles = stlModel->getSTLData();
         foreach(STLTriangle tri, triangles)
         {
-            for (int j = 0; j < 3; ++j) {
+            for (int j = 0; j < 3; ++j)
+            {
                 QVector3D vertex = tri.getVertex(j);
                 m_pointData.push_back(vertex);
                 QVector3D normal = tri.getNormal();
                 normalList.push_back(normal.x());
                 normalList.push_back(normal.y());
                 normalList.push_back(normal.z());
+                currentVertexIndex++;
             }
         }
+
+        range.vertexCount = currentVertexIndex - range.startIndex;
+        m_modelRanges.append(range);
+        delete stlModel;
     }
+
     normalizePointData(m_pointData);
     // 将所有的点数据放入点数据容器中
     QVector<QVector3D>::iterator it = m_pointData.begin();
@@ -198,6 +213,8 @@ void ModelWidget::showHighLight(bool bShow)
 {
     m_bDrawHighLight = bShow;
 
+    m_selectedModelIndex = 3;
+
     update();
 }
 
@@ -271,7 +288,15 @@ void ModelWidget::paintGL()
         if (vertices.size() > 0)
         {
             m_vaoSTL.bind();
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+
+            if (m_selectedModelIndex >= 0 && m_selectedModelIndex < m_modelRanges.size())
+            {
+                ModelRange range = m_modelRanges[m_selectedModelIndex];
+                glDrawArrays(GL_TRIANGLES, 0, range.startIndex);
+                m_stlShaderProgram.setUniformValue("material.ambient", QVector3D(1.0f, 0.0f, 0.0f));
+                glDrawArrays(GL_TRIANGLES, range.startIndex, range.vertexCount);
+            }
+
             m_vaoSTL.release();
         }
 
@@ -294,7 +319,11 @@ void ModelWidget::paintGL()
             // 重新绘制放大后的模型
             if (vertices.size() > 0) {
                 m_vaoSTL.bind();
-                glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+                if (m_selectedModelIndex >= 0 && m_selectedModelIndex < m_modelRanges.size())
+                {
+                    ModelRange range = m_modelRanges[m_selectedModelIndex];
+                    glDrawArrays(GL_TRIANGLES, range.startIndex, range.vertexCount);
+                }
                 m_vaoSTL.release();
             }
 
