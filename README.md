@@ -13,3 +13,6 @@ STL模型描边高亮
 ![image text](https://github.com/sakuya0818/STLAndPLYLoader/blob/main/Res/4.png)
 
 ![image text](https://github.com/sakuya0818/STLAndPLYLoader/blob/main/Res/5.png)
+
+加载多个模型，并高亮某一个模型，并改变模型颜色
+![image text](https://github.com/sakuya0818/STLAndPLYLoader/tree/main/Res/6.png)
