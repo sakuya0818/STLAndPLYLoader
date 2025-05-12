@@ -213,6 +213,8 @@ void ModelWidget::showHighLight(bool bShow)
 {
     m_bDrawHighLight = bShow;
 
+    m_selectedModelIndex = 3;
+
     update();
 }
 
