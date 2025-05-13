@@ -388,7 +388,12 @@ void ModelWidget::paintGL()
     }
     m_plyShaderProgram.release();
 
+    // 更新界面，并强制父窗口更新
     update();
+    if (parentWidget())
+    {
+        parentWidget()->update();
+    }
 }
 
 void ModelWidget::mouseMoveEvent(QMouseEvent * event)// 获取鼠标移动
