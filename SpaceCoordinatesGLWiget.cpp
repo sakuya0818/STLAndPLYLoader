@@ -18,6 +18,7 @@ void SpaceCoordinatesGLWiget::drawGrid()
     float step = 0.1f;
     int num = 10;
 
+    // 画一条线的lamda函数
     auto addLine = [&](float x1, float y1, float z1, float x2, float y2, float z2) {
             vertices << x1 << y1 << z1 << 0.2f << 0.8f << 0.8f
                      << x2 << y2 << z2 << 0.2f << 0.8f << 0.8f;
